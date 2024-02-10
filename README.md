@@ -4,4 +4,4 @@ C# Programming
 ## Module 1
 
 ## Module 2
-[Module 2](./Module 2) is about C# Language Basics.
+[Module 2](./Module2) is about C# Language Basics.
