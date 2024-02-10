@@ -1,4 +1,4 @@
-# Module 1: Intro to C# 
+# Module 1: History of C# & IDE’s
 
 
 In this Module,
