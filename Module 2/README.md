@@ -13,13 +13,13 @@ In this Module, we introduce the basics of the C# language. Keep in mind that th
   4. https://github.com/PBSC-Hammond/COP2360/blob/main/Module%202/2_3.cp
   5. https://github.com/PBSC-Hammond/COP2360/blob/main/Module%202/2_4.cp
   6. https://github.com/PBSC-Hammond/COP2360/blob/main/Module%202/2_5.cp
-* Syntax
-* Type Basics
-* Numeric Types
-* Boolean Type and Operators
-* Strings and Characters
-* Arrays
-* Multidimensional Arrays
-* Variables and Parameters
-* Expressions and Operators
-* Namespaces
+## Syntax
+## Type Basics
+## Numeric Types
+## Boolean Type and Operators
+## Strings and Characters
+## Arrays
+## Multidimensional Arrays
+## Variables and Parameters
+## Expressions and Operators
+## Namespaces
