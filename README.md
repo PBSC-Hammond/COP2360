@@ -6,3 +6,27 @@ C# Programming
 
 ## Module 2: Using Data
 [Module 2](./Module_2/README.md) is about C# Language Basics.
+
+## Module 3: Creating Types in C#
+[Module 3](./Module_3/README.md) is about o	OOD, conditionals, arrays & Exception Handling
+
+## Module 4: Advanced C#
+[Module 4](./Module_4/README.md) is about .
+
+## Module 5: .Net Overview
+[Module 5](./Module_5/README.md) is about.
+
+## Module 6: .Net Fundamentals
+[Module 6](./Module_6/README.md) is about .
+
+## Module 7: Collections
+[Module 7](./Module_7/README.md) is about C# .
+
+## Module 8: Streams And I/O
+[Module 8](./Module_8/README.md) is about C# .
+
+## Module 9: C# Mobile
+[Module 9](./Module_9/README.md) is about C# .
+
+## Module 10: Final
+[Module 10](./Module_10/README.md) is about C# .
