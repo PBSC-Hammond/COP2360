@@ -1,6 +1,11 @@
 # COP2360
 C# Programming
 
+**PLO-2** (Computer Programming (AS 2126)) Final Project
+ * Design, implement, and evaluate computer solutions utilizing structured and object-oriented programming methodologies, utilizing control structures, methods with the appropriate parameters, and data structures of the appropriate type.
+ * Measure TBD
+
+
 ## Module 1: History of C# & IDE’s
 [Module 1](./Module_1/README.md) is an Introduction to C# and the tools we will utilize in the course.
 
