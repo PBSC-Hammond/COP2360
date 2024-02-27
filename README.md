@@ -1,5 +1,15 @@
 # COP2360
 C# Programming
+### CLO’s:
+1.	List the historical evolution of programming languages such as C, C++ that led to the development of C# and its standardization as Visual C# in .NET paltform.
+2.	Describe and use Visual Studio IDE environment and its components.
+3.	Understand mobile applications market and its business issues.
+4.	Compile and run C# programs for a wide range of platform including mobile devices.
+5.	Write C# programs which use different control structures, classes, objects, and methods.
+6.	Write C# programs which utilize exception handling.
+7.	Write code that uses object-oriented programming and uses abstraction, data encapsulation, inheritance, and polymorphism.
+
+
 
 #### PLO’s associated with this course:
  **Computer Programming (AS 2126)**
