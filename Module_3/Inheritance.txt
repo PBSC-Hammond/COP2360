@@ -1,0 +1,470 @@
+Inheritance
+
+// A class can inherit from another class to extend or customize the original class.
+
+Stock msft = new Stock { Name = "MSFT", SharesOwned = 1000 };
+
+Console.WriteLine (msft.Name);         // MSFT
+Console.WriteLine (msft.SharesOwned);  // 1000
+
+House mansion = new House { Name = "Mansion", Mortgage = 250000 };
+
+Console.WriteLine (mansion.Name);      // Mansion
+Console.WriteLine (mansion.Mortgage);  // 250000
+
+public class Asset
+{
+  public string Name;
+}
+
+public class Stock : Asset   // inherits from Asset
+{
+  public long SharesOwned;
+}
+
+public class House : Asset   // inherits from Asset
+{
+  public decimal Mortgage;
+}
+Polymorphism
+
+// A variable of type x can refer to an object that subclasses x.
+
+// The Display method below accepts an Asset. This means means we can pass it any subtype:
+Display (new Stock { Name="MSFT", SharesOwned=1000 });
+Display (new House { Name="Mansion", Mortgage=100000 });
+
+void Display (Asset asset)
+{
+  Console.WriteLine (asset.Name);
+}
+
+public class Asset
+{
+  public string Name;
+}
+
+public class Stock : Asset   // inherits from Asset
+{
+  public long SharesOwned;
+}
+
+public class House : Asset   // inherits from Asset
+{
+  public decimal Mortgage;
+}
+Reference Conversions - Upcasting
+
+// An upcast creates a base class reference from a subclass reference:
+
+Stock msft = new Stock();
+Asset a = msft;               // Upcast
+
+// After the upcast, the two variables still references the same Stock object:
+
+Console.WriteLine (a == msft);  // True
+
+public class Asset
+{
+  public string Name;
+}
+
+public class Stock : Asset   // inherits from Asset
+{
+  public long SharesOwned;
+}
+
+public class House : Asset   // inherits from Asset
+{
+  public decimal Mortgage;
+}
+Reference Conversions - Downcasting
+
+// A downcast operation creates a subclass reference from a base class reference.
+
+Stock msft = new Stock();
+Asset a = msft;                      // Upcast
+Stock s = (Stock)a;                  // Downcast
+Console.WriteLine (s.SharesOwned);   // <No error>
+Console.WriteLine (s == a);          // True
+Console.WriteLine (s == msft);       // True
+
+// A downcast requires an explicit cast because it can potentially fail at runtime:
+
+House h = new House();
+Asset a2 = h;               // Upcast always succeeds
+Stock s2 = (Stock)a2;       // ERROR: Downcast fails: a is not a Stock
+
+public class Asset
+{
+  public string Name;
+}
+
+public class Stock : Asset   // inherits from Asset
+{
+  public long SharesOwned;
+}
+
+public class House : Asset   // inherits from Asset
+{
+  public decimal Mortgage;
+}
+The is operator
+
+// The is operator tests whether a reference conversion (or unboxing conversion) would succeed:
+
+Asset a = new Asset();
+
+if (a is Stock)
+  Console.WriteLine (((Stock)a).SharesOwned);
+
+public class Asset
+{
+  public string Name;
+}
+
+public class Stock : Asset   // inherits from Asset
+{
+  public long SharesOwned;
+}
+
+public class House : Asset   // inherits from Asset
+{
+  public decimal Mortgage;
+}
+The is operator and pattern variables
+
+// The is operator tests whether a reference conversion (or unboxing conversion) would succeed:
+
+Asset a = new Stock { SharesOwned = 3 };
+
+if (a is Stock s)
+  Console.WriteLine (s.SharesOwned);
+  
+// We can take this further:
+
+if (a is Stock s2 && s2.SharesOwned > 100000)
+  Console.WriteLine ("Wealthy");
+else
+  s2 = new Stock();   // s is in scope
+
+Console.WriteLine (s2.SharesOwned);  // Still in scope
+
+public class Asset
+{
+  public string Name;
+}
+
+public class Stock : Asset   // inherits from Asset
+{
+  public long SharesOwned;
+}
+
+public class House : Asset   // inherits from Asset
+{
+  public decimal Mortgage;
+}
+The as operator
+
+// The as operator performs a downcast that evaluates to null (rather than throwing an exception)
+// if the downcast fails.
+
+Asset a = new Asset();
+Stock s = a as Stock;       // s is null; no exception thrown
+
+if (s != null) Console.WriteLine (s.SharesOwned);  // Nothing written
+
+public class Asset
+{
+  public string Name;
+}
+
+public class Stock : Asset   // inherits from Asset
+{
+  public long SharesOwned;
+}
+
+public class House : Asset   // inherits from Asset
+{
+  public decimal Mortgage;
+}
+Virtual Function Members
+
+// A function marked as virtual can be overridden by subclasses wanting to provide a
+// specialized implementation:
+
+House mansion = new House { Name="McMansion", Mortgage=250000 };
+Console.WriteLine (mansion.Liability);      // 250000
+
+public class Asset
+{
+  public string Name;
+  public virtual decimal Liability => 0;    // Virtual
+}
+
+public class House : Asset
+{
+  public decimal Mortgage;
+  public override decimal Liability => Mortgage;   // Overridden
+}
+
+public class Stock : Asset
+{
+  public long SharesOwned;
+  // We won't override Liability here, because the default implementation will do.
+}
+Covariant returns
+
+// From C# 9, we can override a method such that it returns a more derived (subclased) type:
+
+House mansion1 = new House { Name = "McMansion", Mortgage = 250000 };
+House mansion2 = mansion1.Clone();
+
+public class Asset
+{
+  public string Name;
+  public virtual Asset Clone() => new Asset { Name = Name };
+}
+
+public class House : Asset
+{
+  public decimal Mortgage;
+  
+  // We can return House when overriding:
+  public override House Clone() => new House { Name = Name, Mortgage = Mortgage };
+}
+Abstract Classes & Members
+
+// A class declared as abstract can never be instantiated. Instead, only its concrete subclasses
+// can be instantiated. Abstract classes are able to define abstract members.
+
+new Stock { SharesOwned = 200, CurrentPrice = 123.45M }.NetValue.Dump();
+
+public abstract class Asset    // Note abstract keyword
+{
+  public abstract decimal NetValue { get; }  // Note empty implementation
+}
+
+public class Stock : Asset
+{
+  public long SharesOwned;
+  public decimal CurrentPrice;
+
+  // Override like a virtual method.
+  public override decimal NetValue => CurrentPrice * SharesOwned; 
+}
+Hiding Inherited Members with new
+
+// A base class and a subclass may define identical members. This usually happens by accident:
+
+B b = new B();
+b.Counter.Dump();    // 2
+  
+// Notice the non-virtual behavior in the code below:
+  
+A referenceConvertedB = b;
+referenceConvertedB.Counter.Dump();    // 1
+
+public class A      { public int Counter = 1; }
+public class B : A  { public int Counter = 2; }
+
+// Occasionally, you want to hide a member deliberately, in which case you can apply the new  
+// modifier to the member in the subclass, to avoid the compiler warning. The behavior is the same:
+
+public class X      { public     int Counter = 1; }
+public class Y : X  { public new int Counter = 2; }
+new vs virtual
+
+Overrider over = new Overrider();
+BaseClass b1 = over;
+over.Foo();                         // Overrider.Foo
+b1.Foo();                           // Overrider.Foo
+  
+Hider h = new Hider();
+BaseClass b2 = h;
+h.Foo();                           // Hider.Foo
+b2.Foo();                          // BaseClass.Foo
+
+public class BaseClass
+{
+  public virtual void Foo()  { Console.WriteLine ("BaseClass.Foo"); }
+}
+
+public class Overrider : BaseClass
+{
+  public override void Foo() { Console.WriteLine ("Overrider.Foo"); }
+}
+
+public class Hider : BaseClass
+{
+  public new void Foo()      { Console.WriteLine ("Hider.Foo"); }
+}
+Sealing Functions & Classes
+
+// An overridden function member may seal its implementation with the sealed keyword to prevent it
+// from being overridden by further subclasses:
+
+House mansion = new House { Name="McMansion", Mortgage=250000 };
+Console.WriteLine (mansion.Liability);      // 250000
+
+public class Asset
+{
+  public string Name;
+  public virtual decimal Liability => 0;    // Virtual
+}
+
+public class House : Asset
+{
+  public decimal Mortgage;
+  public sealed override decimal Liability => Mortgage;   // Overridden + sealed
+}
+
+// You can also seal the class itself, implicitly sealing all the virtual functions:
+
+public sealed class Stock : Asset { /* ... */ }
+Constructors & Inheritance
+
+// A subclass must declare its own constructors. In doing so, it can call any of the
+// base class’s constructors with the base keyword:
+
+new Subclass (123);
+
+public class Baseclass
+{
+  public int X;
+  public Baseclass () { }
+  public Baseclass (int x) { this.X = x; }
+}
+
+public class Subclass : Baseclass
+{
+  public Subclass (int x) : base (x) { }
+}
+Implicit Calling of the Parameterless Base Class Constructor
+
+// If a constructor in a subclass omits the base keyword, the base type’s parameterless
+// constructor is implicitly called:
+
+new Subclass();
+
+public class BaseClass
+{
+  public int X;
+  public BaseClass() { X = 1; }
+}
+
+public class Subclass : BaseClass
+{
+  public Subclass() { Console.WriteLine (X); }  // 1
+}
+Required members
+
+// If a constructor in a subclass omits the base keyword, the base type’s parameterless
+// constructor is implicitly called:
+
+new Subclass();
+
+public class BaseClass
+{
+  public int X;
+  public BaseClass() { X = 1; }
+}
+
+public class Subclass : BaseClass
+{
+  public Subclass() { Console.WriteLine (X); }  // 1
+}
+Required members - adding constructors
+
+// Should you wish to also write a constructor, you can apply the [SetsRequiredMembers]
+// attribute to bypass the required member restriction for that constructor:
+// Consumers can now benefit from the convenience of that constructor without any tradeoff:
+
+Asset a1 = new Asset { Name = "House" };  // OK
+Asset a2 = new Asset ("House");           // OK
+Asset a3 = new Asset();                   // Error!
+
+// Notice that we also defined a parameterless constructor (for use with the object initializer).
+// Its presence also ensures that subclasses remain under no burden to reproduce any constructor.
+// In the following example, the House class chooses not to implement a convenience constructor:
+
+House h1 = new House { Name = "House" };  // OK
+House h2 = new House();                   // Error!
+
+Asset a4 = new Asset { Name = "House" };  // OK
+Asset a5 = new Asset();                   // Error: will not compile!
+
+public class House : Asset { }            // No constructor, no worries!
+
+public class Asset
+{
+  public required string Name;
+
+  public Asset() { }
+
+  [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
+  public Asset (string n) => Name = n;
+}
+Required members - constructors and subclassing
+
+// In the following example, the House class chooses not to implement a convenience constructor:
+
+House h1 = new House { Name = "House" };  // OK
+House h2 = new House();                   // Error!
+
+Asset a1 = new Asset { Name = "House" };  // OK
+Asset a2 = new Asset();                   // Error: will not compile!
+
+public class Asset
+{
+  public required string Name;
+
+  public Asset() { }
+
+  [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
+  public Asset (string n) => Name = n;
+}
+
+public class House : Asset { }            // No constructor, no worries!
+Inheritance with primary constructors
+
+// Classes with primary constructors can subclass with the following syntax:
+public class BaseClass (int x) { /* ... */ }
+
+public class Subclass (int x, int y) : BaseClass (x) { /* ... */ }
+
+// The call to BaseClass(x) is equivalent to calling base(x) in the following example: 
+public class Subclass2 : BaseClass
+{
+  public Subclass2 (int x, int y) : base (x) { /* ... */ }
+}
+Overloading and Resolution
+
+// When calling an overload method, the method with the most specific 
+// parameter type match has precedence, based on the *compile-time* variable type:
+
+void Main()
+{
+  Foo (new House());      // Calls Foo (House)
+  
+  Asset a = new House();
+  Foo (a);                // Calls Foo (Asset)
+}
+
+static void Foo (Asset a) { "Foo Asset".Dump(); }
+static void Foo (House h) { "Foo House".Dump(); }
+
+public class Asset
+{
+  public string Name;
+}
+
+public class Stock : Asset   // inherits from Asset
+{
+  public long SharesOwned;
+}
+
+public class House : Asset   // inherits from Asset
+{
+  public decimal Mortgage;
+}
