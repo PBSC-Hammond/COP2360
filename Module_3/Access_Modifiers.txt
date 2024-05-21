@@ -1,0 +1,87 @@
+Access Modifiers - Examples
+
+// The access modifiers are public, internal, protected and private.
+//
+// public is the default for members of an enum or interface.
+// internal is the default for nonnested types.
+// private is the default for everything else.
+
+class Class1 {}     // Class1 is internal (default) - visible to other types in same assembly
+public class Class2 {}  // Class2 is visible to everything, including types in other assemblies
+
+class ClassA
+{
+  int x;        // x is private (default) - cannot be accessed from other types
+}
+
+class ClassB
+{
+  internal int x;    // x can be accessed from other types in same assembly
+}
+
+class BaseClass
+{
+  void Foo()           {}    // Foo is private (default)
+  protected void Bar() {}    // Foo is accessible to subclasses
+}
+
+class Subclass : BaseClass
+{
+   void Test1() { Foo(); }     // Error - cannot access Foo
+   void Test2() { Bar(); }     // OK
+}
+Friend Assemblies
+
+// Unsigned friend:
+//    [assembly: InternalsVisibleTo ("Friend")]
+
+// Signed friend:
+//    [assembly: InternalsVisibleTo ("StrongFriend, PublicKey=0024f000048c...")]
+
+// To obtain an assembly's public key, hit F5 to run the following code:
+
+using (var dialog = new OpenFileDialog())
+{
+  dialog.Title = "Locate assembly";
+  dialog.Filter = "Assembly files|*.dll;*.exe";
+  dialog.DefaultExt = ".dll";
+  
+  if (dialog.ShowDialog() != DialogResult.OK) return;
+  if (!File.Exists (dialog.FileName)) return;
+  
+  var aName = Assembly.LoadFile (dialog.FileName).GetName();
+
+  string key = string.Join ("", 
+    aName.GetPublicKey().Select (b => b.ToString ("x2")).ToArray());
+    
+  string assemAttrib = "[assembly: InternalsVisibleTo (\"" 
+    + aName.Name
+    + ", PublicKey=" + key.Dump ("Full Key")
+    + "\")]";
+    
+  assemAttrib.Dump ("Assembly Attribute");
+  
+  Clipboard.SetText (assemAttrib);
+}
+Accessibility Capping
+
+// A type caps the accessibility of its declared members:
+
+class C            // Class C is implicitly internal
+{
+  public void Foo() {}  // Foo's accessibility is capped at internal
+}
+
+void Main() { }
+Restrictions on Access Modifiers
+
+// When overriding a base class function, accessibility must be identical on the overridden function:
+
+class BaseClass             { protected virtual  void Foo() {} }
+class Subclass1 : BaseClass { protected override void Foo() {} }  // OK
+class Subclass2 : BaseClass { public    override void Foo() {} }  // Error
+
+// A subclass itself can be less accessible than a base class, but not more:
+
+internal class A { }
+public class B : A { }          // Error
