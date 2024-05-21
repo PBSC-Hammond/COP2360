@@ -1,0 +1,242 @@
+Interfaces
+
+// The IEnumerator interface is part of the .NET Framework, defined in System.Collections.
+// We can define our own version of this as follows:
+
+IEnumerator e = new Countdown();
+  while (e.MoveNext())
+    Console.Write (e.Current);      // 109876543210
+
+public interface IEnumerator
+{
+  bool MoveNext();
+  object Current { get; }
+  void Reset();
+}
+
+// Here's a class that implements this interface:
+
+class Countdown : IEnumerator
+{
+  int count = 11;
+  public bool MoveNext () => count-- > 0;
+  public object Current   => count;
+  public void Reset()     { throw new NotSupportedException(); }
+}
+Extending an Interface
+
+// We can extend interfaces - just like extending classes:
+
+IRedoable r = null;
+IUndoable u = r;
+
+public interface IUndoable { void Undo(); }
+public interface IRedoable : IUndoable { void Redo(); }
+Explicit Interface Implementation
+
+// Implementing multiple interfaces can sometimes result in a collision between member signatures.
+// You can resolve such collisions by explicitly implementing an interface member:
+
+Widget w = new Widget();
+w.Foo();                      // Widget's implementation of I1.Foo
+((I1)w).Foo();                // Widget's implementation of I1.Foo
+((I2)w).Foo();                // Widget's implementation of I2.Foo
+
+interface I1 { void Foo(); }
+interface I2 { int Foo(); }
+
+public class Widget : I1, I2
+{
+  public void Foo ()
+  {
+    Console.WriteLine ("Widget's implementation of I1.Foo");
+  }
+  
+  int I2.Foo()
+  {
+    Console.WriteLine ("Widget's implementation of I2.Foo");
+    return 42;
+  }
+}
+
+
+// Another reason to explicitly implement interface members is to hide members that are
+// highly specialized and distracting to a type’s normal use case.
+Implementing Interface Members Virtually
+
+// An implicitly implemented interface member is, by default, sealed. It must be marked
+// virtual or abstract in the base class in order to be overridden:
+
+// Calling the interface member through either the base class or the interface
+// calls the subclass’s implementation:
+RichTextBox r = new RichTextBox();
+r.Undo();                          // RichTextBox.Undo
+((IUndoable)r).Undo();             // RichTextBox.Undo
+((TextBox)r).Undo();               // RichTextBox.Undo
+
+public interface IUndoable { void Undo(); }
+
+public class TextBox : IUndoable
+{
+  public virtual void Undo() => Console.WriteLine ("TextBox.Undo");
+}
+
+public class RichTextBox : TextBox
+{
+  public override void Undo() => Console.WriteLine ("RichTextBox.Undo");
+}
+Reimplementing an Interface in a Subclass
+
+// A subclass can reimplement any interface member already implemented by a base class.
+// Reimplementation hijacks a member implementation (when called through the interface):
+
+// Calling the reimplemented member through the interface calls the subclass’s implementation:
+RichTextBox r = new RichTextBox();
+r.Undo();                 // RichTextBox.Undo      Case 1
+((IUndoable)r).Undo();    // RichTextBox.Undo      Case 2
+
+public interface IUndoable { void Undo(); }
+
+public class TextBox : IUndoable
+{
+  void IUndoable.Undo() => Console.WriteLine ("TextBox.Undo");
+}
+
+public class RichTextBox : TextBox, IUndoable
+{
+  public new void Undo() => Console.WriteLine ("RichTextBox.Undo");
+}
+Reimplementing an Interface - Contrast
+
+// Suppose that TextBox instead implemented Undo implicitly:
+
+// This would give us another way to call Undo, which would “break” the system, as shown in Case 3:
+
+RichTextBox r = new RichTextBox();
+r.Undo();                 // RichTextBox.Undo      Case 1
+((IUndoable)r).Undo();    // RichTextBox.Undo      Case 2
+((TextBox)r).Undo();      // TextBox.Undo          Case 3
+
+public interface IUndoable { void Undo(); }
+
+public class TextBox : IUndoable
+{
+  public void Undo() => Console.WriteLine ("TextBox.Undo");
+}
+
+public class RichTextBox : TextBox, IUndoable
+{
+  public new void Undo() => Console.WriteLine ("RichTextBox.Undo");
+}
+Alternatives to interface reimplementation
+
+// Even with explicit member implementation, interface reimplementation is problematic for a
+// couple of reasons.
+
+// The following pattern is a good alternative if you need explicit interface implementation:
+
+IUndoable r = new RichTextBox();
+r.Undo();    // RichTextBox.Undo
+
+public interface IUndoable { void Undo(); }
+
+public class TextBox : IUndoable
+{
+  void IUndoable.Undo()         => Undo();    // Calls method below
+  protected virtual void Undo() => Console.WriteLine ("TextBox.Undo");
+}
+
+public class RichTextBox : TextBox
+{
+  protected override void Undo() => Console.WriteLine ("RichTextBox.Undo");
+}
+Interfaces and Boxing
+
+// Casting a struct to an interface causes boxing. Calling an implicitly implemented
+// member on a struct does not cause boxing:
+
+S s = new S();
+s.Foo();         // No boxing.
+  
+I i = s;         // Box occurs when casting to interface.
+i.Foo();
+
+interface  I { void Foo();          }
+struct S : I { public void Foo() {} }
+Default interface members
+
+var logger = new Logger();
+
+// We can't call the Log method directly:
+// foo.Log ("message")   // Won't compile
+
+// But we can call it via the interface:
+((ILogger)logger).Log ("message");
+
+interface ILogger
+{
+  void Log (string text) => Console.WriteLine (text);
+}
+
+class Logger : ILogger
+{
+  // We don't need to implement anything
+}
+Static nonvirtual interface members
+
+ILogger.Prefix = "File log: ";
+
+var logger = new Logger();  
+((ILogger)logger).Log ("message");
+
+interface ILogger
+{
+  void Log (string text) =>
+    Console.WriteLine (Prefix + text);
+
+  static string Prefix = "";
+}
+
+class Logger : ILogger
+{
+  // We don't need to implement anything
+}
+Static nonvirtual interface members - scenario
+
+ILogger foo = new Logger();
+foo.Log (new Exception ("test"));
+
+class Logger : ILogger
+{  
+  public void Log (string message) => Console.WriteLine (message);
+}
+
+interface ILogger
+{
+  // Let's suppose the interface as always defined this method:
+  void Log (string message);  
+  
+  // Adding a new member to an interface need not break implementors:
+  public void Log (Exception ex) => Log (ExceptionHeader + ex.Message);
+
+  static string ExceptionHeader = "Exception: ";
+}
+Static virtual & abstract interface members
+
+// Static virtual/abstract interface members (from C# 11) enable static polymorphism,
+// an advanced feature that we will discuss in Chapter 4
+
+interface ITypeDescribable
+{
+  static abstract string Description { get; }
+  static virtual string Category => null;
+}
+
+// An implementing class or struct must implement static abstract members, and can
+// optionally implement static virtual members
+
+class CustomerTest : ITypeDescribable
+{
+  public static string Description => "Customer tests";  // Mandatory
+  public static string Category    => "Unit testing";    // Optional
+}
