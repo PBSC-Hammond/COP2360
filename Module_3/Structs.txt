@@ -1,0 +1,65 @@
+Structs
+
+// A struct is similar to a class, with several key differences (as described in the book).
+// In particular, a struct is a value type rather than a reference type.
+
+// The construction semantics are different, too:
+
+Point p1 = new Point ();       // p1.x and p1.y will be 1
+Point p2 = new Point (2, 2);   // p2.x and p2.y will be 2
+
+p1.Dump();
+p2.Dump();
+
+struct Point
+{
+  public int x, y;
+  public Point ()             { this.x = 1; this.y = 1; }
+  public Point (int x, int y) { this.x = x; this.y = y; }
+}
+Structs - Illegal Construction Examples
+
+// Changing the following struct to a class makes the type legal:
+
+Point p1 = new Point ();
+Point p2 = new Point (2, 2);
+Point p3 = new Point (2);
+
+p1.Dump();
+p2.Dump();
+p3.Dump();
+
+struct Point
+{
+  public int x, y;
+  public Point ()             { this.x = 1; this.y = 1; }
+  public Point (int x, int y) { this.x = x; this.y = y; }
+  public Point (int x)        { this.x = x; }   // Illegal: y not assigned
+}
+Structs - default constructor
+
+Point p1 = new Point();       // p1.x and p1.y will be 1
+Point p2 = default;           // p2.x and p2.y will be 0
+var points = new Point [10];  // Each point in the array will be (0,0)
+var test = new Test();        // test.p will be (0,0);
+
+p1.Dump();
+p2.Dump();
+points.Dump();
+test.Dump();
+
+struct Point
+{
+  public int x = 1;
+  public int y;
+  public Point() => y = 1;
+}
+
+class Test { public Point p; }
+ref Structs
+
+var points = new Point [100];    // Error: will not compile!
+
+ref struct Point { public int X, Y; }
+
+class MyClass { Point P; }         // Error: will not compile!
