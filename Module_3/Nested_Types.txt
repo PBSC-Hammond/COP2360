@@ -1,0 +1,44 @@
+Nested Types
+
+// A nested type is declared within the scope of another type. For example:
+
+public class TopLevel
+{
+  public class Nested { }               // Nested class
+  public enum Color { Red, Blue, Tan }  // Nested enum
+}
+
+static void Main()
+{
+  TopLevel.Color color = TopLevel.Color.Red;  
+}
+Nested Types - Private Member Visibility
+
+public class TopLevel
+{
+  static int x;
+  public class Nested
+  {
+    public static void Foo() { Console.WriteLine (TopLevel.x); }
+  }
+}
+
+static void Main()
+{
+  TopLevel.Nested.Foo();
+}
+Nested Types - Protected Member Visibility
+
+public class TopLevel
+{
+  protected class Nested { }
+}
+
+public class SubTopLevel : TopLevel
+{
+  static void Foo() { new TopLevel.Nested(); }
+}
+
+static void Main()
+{
+}
