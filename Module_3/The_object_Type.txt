@@ -1,0 +1,97 @@
+The object Type
+
+// object (System.Object) is the ultimate base class for all types. Any type can be
+// implicitly converted to object; we can leverage this to write a general-purpose Stack:
+
+Stack stack = new Stack();
+stack.Push ("sausage");
+string s = (string)stack.Pop();   // Downcast, so explicit cast is needed
+Console.WriteLine (s);             // sausage
+
+// You can even push value types:
+stack.Push (3);
+int three = (int)stack.Pop();
+
+public class Stack
+{
+  int position;
+  object[] data = new object [10];
+  public void Push (object obj) { data [position++] = obj; }
+  public object Pop() { return data [--position]; }
+}
+
+// Because Stack works with the object type, we can Push and Pop instances of any type
+// to and from the Stack:
+Boxing & Unboxing
+
+// Boxing is the act of casting a value-type instance to a reference-type instance;
+// unboxing is the reverse.
+
+int x = 9;
+object obj = x;           // Box the int
+int y = (int)obj;         // Unbox the int
+
+y.Dump();
+Unboxing to Wrong Type
+
+// When unboxing, the types must match exactly:
+
+object obj = 9;           // 9 is inferred to be of type int
+long x = (long) obj;      // InvalidCastException
+Unboxing to Wrong Type - Fix
+
+object obj = 9;
+
+// First, unbox to the correct type (int), then implicitly convert to long:
+
+long x = (int) obj;
+x.Dump();
+
+// This also works:
+
+object obj2 = 3.5;              // 3.5 is inferred to be of type double
+int y = (int) (double) obj2;    // x is now 3
+y.Dump();
+Copying Semantics of Boxing & Unboxing
+
+// Boxing copies the value-type instance into the new object, and unboxing copies
+// the contents of the object back into a value-type instance.
+
+int i = 3;
+object boxed = i;
+i = 5;
+Console.WriteLine (boxed);    // 3
+GetType and typeof
+
+// All types in C# are represented at runtime with an instance of System.Type.
+// There are two basic ways to get a System.Type object:
+//  • Call GetType on the instance.
+//  • Use the typeof operator on a type name.
+
+Point p = new Point();
+Console.WriteLine (p.GetType().Name);             // Point
+Console.WriteLine (typeof (Point).Name);          // Point
+Console.WriteLine (p.GetType() == typeof (Point)); // True
+Console.WriteLine (p.X.GetType().Name);           // Int32
+Console.WriteLine (p.Y.GetType().FullName);       // System.Int32
+
+public class Point { public int X, Y; }
+The ToString Method
+
+// The ToString method is defined on System.Object and returns the default textual representation
+// of a type instance:
+
+
+// You can override the ToString method on custom types:
+
+int x = 1;
+string s = x.ToString();     // s is "1"
+
+Panda p = new Panda { Name = "Petey" };
+Console.WriteLine (p.ToString());     // Petey
+
+public class Panda
+{
+  public string Name;
+  public override string ToString() { return Name; }
+}
