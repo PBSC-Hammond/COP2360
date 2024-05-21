@@ -1,0 +1,404 @@
+Generic Types
+
+// A generic type declares type parameters—placeholder types to be filled in by the consumer
+// of the generic type, which supplies the type arguments:
+
+var stack = new Stack<int>();
+stack.Push (5);
+stack.Push (10);
+int x = stack.Pop();        // x is 10
+int y = stack.Pop();        // y is 5
+
+x.Dump(); y.Dump();
+
+public class Stack<T>
+{
+  int position;
+  T[] data = new T [100];
+  public void Push (T obj) => data [position++] = obj;
+  public T Pop() => data [--position];
+}
+Why Generics Exist
+
+// Generics exist to write code that is reusable across different types. Without generic types,
+// writing a general-purpose stack would require a solution such as this:
+
+// Now suppose we want a stack that stores just integers:
+ObjectStack stack = new ObjectStack();
+
+// It's easy to make mistakes:
+stack.Push ("s");          // Wrong type, but no error!
+int i = (int)stack.Pop();  // Downcast - runtime error!
+
+public class ObjectStack
+{
+  int position;
+  object[] data = new object [10];
+  public void Push (object obj) => data [position++] = obj;
+  public object Pop() => data [--position];
+}
+Generic Methods
+
+// A generic method declares type parameters within the signature of a method.
+
+int x = 5;
+int y = 10;
+Swap (ref x, ref y);
+
+x.Dump(); y.Dump();
+
+static void Swap<T> (ref T a, ref T b)
+{
+  T temp = a;
+  a = b;
+  b = temp;
+}
+Declaring Type Parameters
+
+// Type parameters can be introduced in the declaration of classes, structs, interfaces,
+// delegates (covered in Chapter 4), and methods:
+// To instantiate:
+Dictionary<int, string> myDic = new Dictionary<int, string>();
+
+// Or:
+var myDicEasy = new Dictionary<int, string>();
+
+struct Nullable<T>
+{
+  public T Value { get; set; }
+}
+
+// A generic type or method can have multiple parameters:
+class Dictionary<TKey, TValue> { /*...*/ }
+
+
+// Generic type names and method names can be overloaded as long as the number of type
+// parameters is different:
+class A { }
+class A<T> { }
+class A<T1, T2> { }
+Typeof and Unbound Generic Types
+
+// It's possible for an unbound generic type to exist at runtime—purely as a Type object.
+
+// The only way to specify an unbound generic type in C# is with the typeof operator:
+Type a1 = typeof (A<>);   // Unbound type (notice no type arguments).
+Type a2 = typeof (A<,>);  // Use commas to indicate multiple type args.
+
+// You can also use the typeof operator to specify a closed type:
+Type a3 = typeof (A<int, int>);
+
+class A<T> { }
+class A<T1, T2> { }
+
+
+// or an open type (which is closed at runtime):
+class B<T>
+{
+  void X() { Type t = typeof (T); }
+}
+The default Generic Value
+
+// The default keyword can be used to get the default value given a generic type parameter:
+
+int[] numbers = { 1, 2, 3 };
+Zap (numbers);
+numbers.Dump();
+
+static void Zap<T> (T[] array)
+{
+  for (int i = 0; i < array.Length; i++)
+    array [i] = default (T);
+}
+Generic Constraints
+
+/* Constraints can be applied to a type parameter restrict the type arguments.
+
+where T : base-class   // Base class constraint
+where T : interface    // Interface constraint
+where T : class        // Reference-type constraint
+where T : struct       // Value-type constraint (excludes Nullable types)
+where T : new()        // Parameterless constructor constraint
+where U : T            // Naked type constraint
+
+*/
+
+int z = Max (5, 10);               // 10
+string last = Max ("ant", "zoo");  // zoo
+
+z.Dump(); last.Dump();
+
+T Max<T> (T a, T b) where T : IComparable<T>  // Self-referencing interface constraint
+{
+  return a.CompareTo (b) > 0 ? a : b;
+}
+
+class SomeClass { }
+interface Interface1 { }
+
+class GenericClass<T> where T : SomeClass, Interface1 { }  // Class & interface constraint
+Parameterless Constructor Constraint
+
+// The parameterless constructor constraint requires T to have a public parameterless constructor.
+// If this constraint is defined, you can call new() on T:
+
+var builders = new StringBuilder [100];
+Initialize (builders);
+builders [37].Dump();
+
+static void Initialize<T> (T[] array) where T : new()
+{
+  for (int i = 0; i < array.Length; i++)
+    array [i] = new T();
+}
+Naked Type Constraint
+
+// The naked type constraint requires one type parameter to derive from another type parameter:
+
+class Stack<T>
+{
+  Stack<U> FilteredStack<U>() where U : T
+  {
+    /* ... */
+    return default(Stack<U>);
+  }
+}
+Subclassing Generic Typest
+
+// A generic class can be subclassed just like a nongeneric class.
+// The subclass can leave the base class’s type parameters open:
+
+class Stack<T>                   { /*...*/ }
+class SpecialStack<T> : Stack<T> { /*...*/ }
+
+// Or the subclass can close the generic type parameters with a concrete type:
+
+class IntStack : Stack<int>  { /*...*/ }
+
+// A subtype can also introduce fresh type arguments:
+
+class List<T>                     { /*...*/ }
+class KeyedList<T,TKey> : List<T> { /*...*/ }
+Self-Referencing Generic Declarations
+
+// A type can name itself as the concrete type when closing a type argument:
+
+var b1 = new Balloon { Color = "Red", CC = 123 };
+var b2 = new Balloon { Color = "Red", CC = 123 };
+
+b1.Equals (b2).Dump();
+
+public class Balloon : IEquatable<Balloon>
+{
+  public string Color { get; set; }
+  public int CC { get; set; }
+
+  public bool Equals (Balloon b)
+  {
+    if (b == null) return false;
+    return b.Color == Color && b.CC == CC;
+  }
+
+  // In real life, we would override object.Equals / GetHashCode as well - see Chapter 6.
+}
+Static Data
+
+// Static data is unique for each closed type:
+
+Console.WriteLine (++Bob<int>.Count);     // 1
+Console.WriteLine (++Bob<int>.Count);     // 2
+Console.WriteLine (++Bob<string>.Count);  // 1
+Console.WriteLine (++Bob<object>.Count);  // 1
+
+class Bob<T> { public static int Count; }
+Type Parameters & Conversions - Problem
+
+// The most common scenario is when you want to perform a reference conversion:
+
+StringBuilder Foo<T> (T arg)
+{
+  if (arg is StringBuilder)
+    return (StringBuilder) arg;   // Will not compile: Cannot convert T to StringBuilder
+  
+  /*...*/
+  return null;
+}
+Type Parameters & Conversions - Solution #1
+
+// The simplest solution is to instead use the as operator, which is unambiguous because
+// it cannot perform custom conversions:
+
+StringBuilder Foo<T> (T arg)
+{
+  StringBuilder sb = arg as StringBuilder;
+  if (sb != null) return sb;
+  
+  /*...*/
+  return null;
+}
+Type Parameters & Conversions - Solution #2
+
+// A more general solution is to first cast to object:
+
+StringBuilder Foo<T> (T arg)
+{
+  if (arg is StringBuilder)
+    return (StringBuilder) (object) arg;
+  
+  /*...*/
+  return null;
+}
+Type Parameters & Conversions - Unboxing
+
+// Unboxing conversions can also introduce ambiguities; again the solution is to first cast to object:
+
+int Foo<T> (T x) => (int) (object) x;
+Covariance - Classes - Problem
+
+// Generic classes are not covariant, to ensure static type safety. Consider the following:
+
+// The following fails to compile:
+Stack<Bear> bears = new Stack<Bear>();
+Stack<Animal> animals = bears;      // Compile-time error
+
+// That restriction prevents the possibility of runtime failure with the following code:
+animals.Push (new Camel());          // Trying to add Camel to bears
+
+class Animal { }
+class Bear : Animal { }
+class Camel : Animal { }
+
+public class Stack<T>   // A simple Stack implementation
+{
+  int position;
+  T[] data = new T [100];
+  public void Push (T obj) => data [position++] = obj;
+  public T Pop() => data [--position];
+}
+Covariance - Classes - Hindering Reusability
+
+// Lack of covariance with classes can hinder reusability. 
+
+Stack<Bear> bears = new Stack<Bear>();
+ZooCleaner.Wash (bears);        // Will not compile!
+
+class Animal {}
+class Bear : Animal {}
+class Camel : Animal {}
+
+public class Stack<T>   // A simple Stack implementation
+{
+  int position;
+  T[] data = new T[100];
+  public void Push (T obj) => data[position++] = obj;
+  public T Pop()           => data [--position];
+}
+
+static class ZooCleaner
+{
+  public static void Wash (Stack<Animal> animals) { /*...*/ }
+}
+Covariance - Classes - Workaround
+
+// Lack of covariance with classes can hinder reusability. 
+
+Stack<Bear> bears = new Stack<Bear>();
+ZooCleaner.Wash (bears);        // Works!
+
+class Animal {}
+class Bear : Animal {}
+class Camel : Animal {}
+
+public class Stack<T>   // A simple Stack implementation
+{
+  int position;
+  T[] data = new T[100];
+  public void Push (T obj) => data[position++] = obj;
+  public T Pop()           => data[--position];
+
+}
+
+static class ZooCleaner
+{
+  public static void Wash<T>(Stack<T> animals) where T : Animal { /*...*/ }
+}
+Covariance - Arrays
+
+// For historical reasons, array types are covariant.
+Bear[] bears = new Bear[3];
+Animal[] animals = bears;     // OK
+
+// The downside of this reusability is that element assignments can fail at runtime:
+animals[0] = new Camel();     // Runtime error
+
+class Animal {}
+class Bear : Animal {}
+class Camel : Animal {}
+Covariance - Interfaces
+
+// As of C# 4.0, generic interfaces support covariance for type parameters marked with the out modifier:
+var bears = new Stack<Bear>();
+bears.Push (new Bear());
+  
+// Bears implements IPoppable<Bear>. We can convert to IPoppable<Animal>:
+IPoppable<Animal> animals = bears;       // Legal
+Animal a = animals.Pop();
+
+public interface IPoppable<out T> { T Pop(); }
+
+class Animal {}
+class Bear : Animal {}
+class Camel : Animal {}
+
+public class Stack<T> : IPoppable<T>
+{
+  int position;
+  T[] data = new T [100];
+  public void Push (T obj) => data [position++] = obj;
+  public T Pop()           => data [--position];
+}
+
+
+// This is also now legal:
+class ZooCleaner
+{
+  public static void Wash (IPoppable<Animal> animals) { /*...*/ }
+}
+Contravariance - Interfaces
+
+// Type parameters marked with the in modifier indicate contravariance:
+IPushable<Animal> animals = new Stack<Animal>();
+IPushable<Bear> bears = animals;    // Legal
+bears.Push (new Bear());
+
+public interface IPoppable<out T> { T Pop(); }
+public interface IPushable<in T> { void Push (T obj); }
+
+class Animal {}
+class Bear : Animal {}
+class Camel : Animal {}
+
+// Note that Stack<T> can implement both IPoppable<T> and IPushable<T>:
+public class Stack<T> : IPoppable<T>, IPushable<T>
+{
+  int position;
+  T[] data = new T[100];
+  public void Push (T obj) => data[position++] = obj;
+  public T Pop()           => data[--position];
+}
+Contravariance - More Examples
+
+/* The following interface is defined as part of the .NET Framework:
+
+public interface IComparer<in T>
+{
+  // Returns a value indicating the relative ordering of a and b
+  int Compare (T a, T b);
+}
+
+*/
+
+var objectComparer = Comparer<object>.Default;
+IComparer<string> stringComparer = objectComparer;
+int result = stringComparer.Compare ("Brett", "Jemaine");
+result.Dump();
