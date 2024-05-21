@@ -1,0 +1,122 @@
+Enums
+
+// An enum is a special value type that lets you specify a group of named numeric constants:
+
+BorderSide topSide = BorderSide.Top;
+bool isTop = (topSide == BorderSide.Top);  
+isTop.Dump();
+
+public enum BorderSide { Left, Right, Top, Bottom }
+
+// You may specify an alternative integral type:
+public enum BorderSideByte : byte { Left, Right, Top, Bottom }
+
+// You may also specify an explicit underlying value for each enum member:
+public enum BorderSideExplicit : byte { Left=1, Right=2, Top=10, Bottom=11 }
+
+public enum BorderSidePartiallyExplicit : byte { Left=1, Right, Top=10, Bottom }
+Enum Conversions
+
+// You can convert an enum instance to and from its underlying integral value with an explicit cast:
+
+int i = (int)BorderSide.Left;
+i.Dump ("i");
+
+BorderSide side = (BorderSide)i;
+side.Dump ("side");
+
+bool leftOrRight = (int)side <= 2;
+leftOrRight.Dump ("leftOrRight");
+
+HorizontalAlignment h = (HorizontalAlignment)BorderSide.Right;
+h.Dump ("h");
+
+BorderSide b = 0;    // No cast required with the 0 literal.
+b.Dump ("b");
+
+public enum BorderSide { Left, Right, Top, Bottom }
+
+public enum HorizontalAlignment
+{
+  Left = BorderSide.Left,
+  Right = BorderSide.Right,
+  Center
+}
+Flags Enums
+
+// You can combine enum members. To prevent ambiguities, members of a combinable enum require
+// explicitly assigned values, typically in powers of two:
+
+BorderSides leftRight = BorderSides.Left | BorderSides.Right;
+
+if ((leftRight & BorderSides.Left) != 0)
+  Console.WriteLine ("Includes Left");   // Includes Left
+
+string formatted = leftRight.ToString();   // "Left, Right"
+
+BorderSides s = BorderSides.Left;
+s |= BorderSides.Right;
+Console.WriteLine (s == leftRight);   // True
+
+s ^= BorderSides.Right;               // Toggles BorderSides.Right
+Console.WriteLine (s);                // Left
+
+[Flags]
+public enum BorderSides { None = 0, Left = 1, Right = 2, Top = 4, Bottom = 8 }
+Flags Enums - Combinations
+
+// For convenience, you can include combination members within an enum declaration itself:
+
+BorderSides.All.Dump();
+
+// The bitwise, arithmetic, and comparison operators return the result of processing
+// the underlying integral values:  
+(BorderSides.All ^ BorderSides.LeftRight).Dump();
+
+[Flags]
+public enum BorderSides
+{
+  None = 0,
+  Left = 1, Right = 2, Top = 4, Bottom = 8,
+  LeftRight = Left | Right,
+  TopBottom = Top | Bottom,
+  All = LeftRight | TopBottom
+}
+Type-Safety Issues
+
+// Since an enum can be cast to and from its underlying integral type, the actual value
+// it may have may fall outside the bounds of a legal enum member:
+BorderSide b = (BorderSide)12345;
+Console.WriteLine (b);                // 12345
+
+BorderSide b2 = BorderSide.Bottom;
+b2++;                 // No errors
+Console.WriteLine (b2);          // 4 (illegal value)
+
+// An invalid BorderSide would break the following method:
+
+void Draw (BorderSide side)
+{
+  if (side == BorderSide.Left) { /*...*/ }
+  else if (side == BorderSide.Right) { /*...*/ }
+  else if (side == BorderSide.Top) { /*...*/ }
+  else { /*...*/ }  // Assume BorderSide.Bottom
+}
+
+public enum BorderSide { Left, Right, Top, Bottom }
+Type-Safety Issues - Workaround
+
+for (int i = 0; i <= 16; i++)
+{
+  BorderSides side = (BorderSides)i;
+  Console.WriteLine (IsFlagDefined (side) + " " + side);
+}
+
+bool IsFlagDefined (Enum e)
+{
+  decimal d;
+  return !decimal.TryParse (e.ToString(), out d);
+}
+
+[Flags]
+public enum BorderSides { Left = 1, Right = 2, Top = 4, Bottom = 8 }
