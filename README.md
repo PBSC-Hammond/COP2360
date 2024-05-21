@@ -26,7 +26,7 @@ C# Programming
 [Module 2](./Module_2/README.md) is about C# Language Basics.
 
 ## Module 3: Creating Types in C#
-[Module 3](./Module_3/README.md) is about o	OOD, conditionals, arrays & Exception Handling
+[Module 3](./Module_3/README.md) is about types and type members.
 
 ## Module 4: Advanced C#
 [Module 4](./Module_4/README.md) is about .
